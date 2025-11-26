@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: doctoralia-db
+    restart: "no"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-clinic}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d clinic"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - doctoralia-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: doctoralia-app
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-clinic}?schema=clinic
+      DB_HOST: db
+      DB_PORT: 5432
+      NODE_ENV: ${NODE_ENV:-production}
+      DOCTORALIA_BASE_URL: ${DOCTORALIA_BASE_URL:-https://www.doctoralia.pe}
+      TARGET_CITIES: ${TARGET_CITIES:-Lima,Arequipa}
+      TARGET_SPECIALTIES: ${TARGET_SPECIALTIES:-cardiologia,dermatologia}
+      MAX_DOCTORS_PER_SPECIALTY: ${MAX_DOCTORS_PER_SPECIALTY:-15}
+      NUM_PATIENTS: ${NUM_PATIENTS:-100}
+      NUM_APPOINTMENTS_PER_DOCTOR: ${NUM_APPOINTMENTS_PER_DOCTOR:-10}
+    volumes:
+      - ./data:/app/data
+    networks:
+      - doctoralia-network
+    ports:
+      - "3000:3000"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  doctoralia-network:
+    driver: bridge
