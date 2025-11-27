@@ -38,7 +38,6 @@ async function main() {
       process.exit(0);
     }
 
-    // ⭐ Limpiar errores previos
     ErrorTracker.clear();
 
     Logger.info('\n[STEP 1/4] Scraping doctors from Doctoralia...');
