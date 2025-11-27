@@ -1,48 +1,58 @@
-# Doctoralia Data Migration Pipeline
+# Clinicsay - Pipeline Migration
 
-Pipeline automatizado de migración de datos que extrae información pública de médicos desde Doctoralia y la carga en una base de datos PostgreSQL usando TypeScript, Prisma ORM y Docker.
+Pipeline automatizado de migración de datos que extrae información pública de médicos desde la página web de 
+Doctoralia mediante técnica de scraping y la carga en una base de datos PostgreSQL usando TypeScript, Prisma ORM y Docker.
 
 ## 📋 Requisitos Previos
 
 - **Docker** (versión 20.10 o superior)
 - **Docker Compose** (versión 2.0 o superior)
-- **Git** (opcional)
+- **Git**
 
-## 🚀 Inicio Rápido
+## Información Técnica del Proyecto
+
+Este documento contiene explicaciones técnicas de como se abordó el proyecto y como se llegó a la solución final.
+
+## 🚀 Instrucciones de Instalación y Ejecución
+
+El repositorio oficial del proyecto es: https://github.com/AndersonBH16/clinicsay-interview
 
 ### 1. Clonar o descargar el proyecto
 ```bash
 # Si usas Git
-git clone <tu-repositorio>
-cd doctoralia-migration
+git clone https://github.com/AndersonBH16/clinicsay-interview.git
+cd clinicsay-app
 
 # O simplemente crea la carpeta y copia los archivos
 ```
 
 ### 2. Configurar variables de entorno
-
-**Windows (PowerShell):**
-```powershell
-Copy-Item .env.example .env
-```
-
-**Windows (CMD):**
-```cmd
-copy .env.example .env
-```
-
-**Linux/Mac:**
-```bash
-cp .env.example .env
-```
+Remombrar el archivo .env.example a .env (Para efectos de prueba compartiré como debe ser el archivo .env)
 
 Puedes ajustar las variables en `.env` según tus necesidades:
 ```env
-TARGET_CITIES=Lima,Arequipa,Cusco
-TARGET_SPECIALTIES=cardiologia,dermatologia,pediatria
-MAX_DOCTORS_PER_SPECIALTY=20
-NUM_PATIENTS=150
-NUM_APPOINTMENTS_PER_DOCTOR=12
+# Database Configuration
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=clinic
+DB_HOST=db
+DB_PORT=5432
+DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${POSTGRES_DB}?schema=clinic"
+
+# Scraper Configuration
+DOCTORALIA_BASE_URL=https://www.doctoralia.pe
+TARGET_CITIES=Lima,Trujillo
+TARGET_SPECIALTIES=cardiologia,dermatologia
+MAX_DOCTORS_PER_SPECIALTY=45
+
+USE_REAL_AVAILABILITY=true
+
+# Data Generation
+NUM_PATIENTS=100
+NUM_APPOINTMENTS_PER_DOCTOR=10
+
+# Application
+NODE_ENV=production
 ```
 
 ### 3. Ejecutar el pipeline completo
@@ -53,13 +63,12 @@ docker-compose up -d --build
 ```
 
 Esto hará:
-- ✅ Descargar las imágenes de Docker necesarias
-- ✅ Construir el contenedor de la aplicación
-- ✅ Levantar PostgreSQL
-- ✅ Crear el esquema de base de datos
-- ✅ Esperar a que la DB esté lista
-- ✅ Ejecutar el pipeline de migración completo
-- ✅ Mantener los contenedores corriendo
+- Descargar las imágenes de Docker necesarias
+- Construir el contenedor de la aplicación
+- Levantar PostgreSQL
+- Crear el esquema de base de datos
+- Esperar a que la DB esté lista
+- Ejecutar el pipeline de migración completo
 
 ### 4. Ver los logs
 ```bash
@@ -75,47 +84,56 @@ docker-compose logs -f
 
 **Salida esperada:**
 ```
-============================================================
-DOCTORALIA DATA MIGRATION PIPELINE
-============================================================
-[INFO] Waiting for database at db:5432...
-[WARN] Database not ready (attempt 1/30)
-[WARN] Database not ready (attempt 2/30)
-[SUCCESS] Database is ready at db:5432
-
-[INFO] Connecting to database...
-[SUCCESS] Database connection established
-
+INFO: ============================================================
+INFO: DOCTORALIA DATA MIGRATION PIPELINE
+INFO: ============================================================
+INFO: Waiting for database at db:5432...
+✓ SUCCESS: Database is ready at db:5432
+INFO: Prisma Client initialized
+✓ SUCCESS: Database connection established
+INFO:
 [STEP 1/4] Scraping doctors from Doctoralia...
-[INFO] Generating mock doctor data...
-[SUCCESS] Successfully scraped 30 doctors
-
+INFO: Starting doctor scraping...
+INFO: Scraping Lima...
+INFO: Page 1: https://www.doctoralia.pe/buscar?q=&loc=Lima&page=1
+INFO: Found 17 doctors
+INFO: Page 2: https://www.doctoralia.pe/buscar?q=&loc=Lima&page=2
+INFO: Found 20 doctors
+INFO: Page 3: https://www.doctoralia.pe/buscar?q=&loc=Lima&page=3
+INFO: Found 17 doctors
 [STEP 2/4] Inserting doctors into database...
-[SUCCESS] Inserted 30 doctors
-
+INFO: Inserting doctors...
+✓ SUCCESS: Inserted 90 doctors
+INFO:
 [STEP 3/4] Generating and inserting patients...
-[INFO] Generating 100 patients...
-[SUCCESS] Generated 100 patients
-[SUCCESS] Inserted 100 patients
-
+INFO: Generating 100 patients...
+✓ SUCCESS: Generated 100 patients
+INFO: Inserting patients...
+✓ SUCCESS: Inserted 100 patients
+INFO:
 [STEP 4/4] Generating and inserting appointments...
-[INFO] Generating appointments...
-[SUCCESS] Generated 300 appointments
-[SUCCESS] Inserted 300 appointments
-
-==================================================
-DATABASE STATISTICS
-==================================================
-Doctors: 30
-Treatments: 150
-Availability slots: 840
-Patients: 100
-Appointments: 300
-==================================================
-
+INFO: Generating appointments...
+✓ SUCCESS: Generated 900 appointments
+INFO: Inserting appointments...
+✓ SUCCESS: Inserted 900 appointments
+INFO:
+INFO: Database stats...
+INFO: ==================================================
+INFO: DATABASE STATISTICS
+INFO: ==================================================
+INFO: Doctors: 90
+INFO: Treatments: 1357
+INFO: Availability: 1800
+INFO: Patients: 100
+INFO: Appointments: 900
+INFO: ==================================================
+✅ No errors during migration
+✓ SUCCESS:
 ✓ Migration pipeline completed successfully!
+INFO: Database connection closed
+npm notice
+doctoralia-app exited with code 0
 
-The application will keep running. Press Ctrl+C to stop or use "docker-compose down"
 ```
 
 ### 5. Verificar que todo funciona
@@ -133,13 +151,7 @@ docker-compose ps
 
 ### Opción A: Usar Docker para conectarse a PostgreSQL
 
-**Windows (PowerShell/CMD):**
 ```cmd
-docker-compose exec db psql -U postgres -d clinic
-```
-
-**Linux/Mac:**
-```bash
 docker-compose exec db psql -U postgres -d clinic
 ```
 
@@ -154,45 +166,7 @@ Conecta con cualquier cliente PostgreSQL (DBeaver, pgAdmin, TablePlus, etc.):
 - **Password:** postgres
 - **Schema:** clinic
 
-### Consultas SQL útiles
-
-Una vez conectado:
-```sql
--- Ver todas las tablas
-\dt clinic.*
-
--- Contar registros
-SELECT 'doctors' as table_name, COUNT(*) FROM clinic.doctors
-UNION ALL
-SELECT 'treatments', COUNT(*) FROM clinic.treatments
-UNION ALL
-SELECT 'patients', COUNT(*) FROM clinic.patients
-UNION ALL
-SELECT 'appointments', COUNT(*) FROM clinic.appointments;
-
--- Ver algunos doctores
-SELECT full_name, specialty, city, rating 
-FROM clinic.doctors 
-LIMIT 5;
-
--- Ver citas con información completa
-SELECT 
-    d.full_name as doctor,
-    p.full_name as patient,
-    t.name as treatment,
-    a.start_at,
-    a.status
-FROM clinic.appointments a
-JOIN clinic.doctors d ON a.doctor_id = d.id
-JOIN clinic.patients p ON a.patient_id = p.id
-JOIN clinic.treatments t ON a.treatment_id = t.id
-LIMIT 10;
-
--- Salir
-\q
-```
-
-## 🔄 Comandos Útiles
+## 🔄 Comandos para interactuar con Docker
 
 ### Reiniciar todo desde cero
 ```bash
@@ -221,11 +195,13 @@ docker-compose logs db
 
 ### Ejecutar comandos dentro del contenedor
 ```bash
-# Entrar al contenedor de la app
+# Entrar al contenedor de la app (elegir uno)
 docker-compose exec app sh
+docker-compose exec app bash
 
-# Entrar al contenedor de la DB
+# Entrar al contenedor de la DB (elegir uno)
 docker-compose exec db sh
+docker-compose exec db bash
 ```
 
 ### Limpiar todo (contenedores, volúmenes, imágenes)
@@ -256,7 +232,7 @@ TARGET_CITIES=Lima,Cusco,Trujillo,Arequipa
 TARGET_SPECIALTIES=cardiologia,dermatologia,pediatria,traumatologia
 ```
 
-## ❌ Solución de Problemas
+## Solución de Problemas
 
 ### Puerto 5432 ya está en uso
 
@@ -307,15 +283,11 @@ docker-compose down -v
 docker-compose up -d --build
 ```
 
-### En Windows: scripts no son compatibles
-
-✅ **Ya está solucionado** - Esta versión NO usa scripts `.sh`, todo es 100% multiplataforma usando Node.js.
-
 ## 📊 Estructura del Proyecto
 ```
 doctoralia-migration/
 ├── src/
-│   ├── index.ts                    # ✅ Punto de entrada con espera de DB
+│   ├── index.ts                
 │   ├── config/
 │   │   └── database.ts
 │   ├── scrapers/
@@ -327,42 +299,73 @@ doctoralia-migration/
 │   │   └── migration.service.ts
 │   └── utils/
 │       ├── logger.ts
-│       └── wait-for-db.ts          # ✅ NUEVO - Espera DB sin scripts
+│       └── wait-for-db.ts
 ├── prisma/
 │   └── schema.prisma
+├── data/
+│   │   ├── availability.json
+│   │   └── doctos.json
+│   │   └── treatments.json
 ├── database/
 │   └── schema.sql
-├── docker-compose.yml              # ✅ ACTUALIZADO
-├── Dockerfile                      # ✅ ACTUALIZADO
+├── docker-compose.yml
+├── Dockerfile
 ├── .env.example
 └── README.md
 ```
+## Limitaciones del proyecto y mejoras
 
-## ✅ Checklist de Verificación
+- **Limitaciones actuales:**
+  - El scraper depende de la estructura actual de Doctoralia, cambios en el sitio pueden romperlo.
+  - No se manejan proxies o rotación de IPs, lo que puede llevar a bloqueos si se hacen muchas solicitudes.
+  - La generación de datos es básica y puede que se presente alguna inconsistencia en ciertos datos, pero pueden ser manejados mejorando y optimizando los algoritmos de scraping.
+  - Para efecto de prueba, se utilizaron dos ciudades: Lima y Trujillo, y dos especialidades: Cardiología y Dermatología. Esto puede ser modificado en el archivo .env
+  - 
 
-- [ ] Docker Desktop instalado y corriendo
-- [ ] Todos los archivos en sus carpetas correctas
-- [ ] Archivo `.env` creado desde `.env.example`
-- [ ] `docker-compose up -d --build` ejecutado
-- [ ] Logs muestran "Migration pipeline completed successfully"
-- [ ] `docker-compose ps` muestra ambos contenedores "Up"
-- [ ] Puedes conectarte a la base de datos
-- [ ] Las tablas tienen datos
+## Entregables para la prueba técnica
 
-## 🎉 ¡Listo!
+1. ✅ URL del repositorio público en github con todos los archivos que se indican a continuación:
+   https://github.com/AndersonBH16/clinicsay-interview
 
-Tu aplicación ahora:
-- ✅ Funciona en Windows, Linux y Mac
-- ✅ No requiere scripts bash
-- ✅ Se levanta con un solo comando
-- ✅ Espera automáticamente a que la DB esté lista
-- ✅ Mantiene los contenedores corriendo
-- ✅ Es 100% reproducible
 
-## 📞 Soporte
+2. ✅ Código fuente TypeScript organizado (scripts para obtención, generación y carga de datos).
+Configuración de Prisma (schema.prisma, migraciones si las usas, generación de client).
+
+    
+    Revisar dentro de la carpeta /src
+
+
+3. ✅ Contenedores
+
+    3.1.docker-compose.yml con los servicios db y app.
+        
+        Revisar el archivo docker-compose.yml en la raíz del proyecto.
+
+    3.2 Dockerfile del servicio app.
+        
+        Revisar el archivo Dockerfile en la raíz del proyecto.
+
+4. ✅ Archivo schema.sql (copiado desde el documento que se te entrega).
+
+
+    Revisar dentro de la carpeta /database
+
+
+5. ✅ Opcionalmente, archivos JSON intermedios (data/*.json) o scripts para generarlos.
+
+
+    Se generan automáticamente dentro del contenedor, puedes ubicarlos en la carpeta /src/data si decides mapear un volumen.
+
+ 
+6. ✅ Un archivo README.md claro, que explique:Requisitos previos.Cómo levantar el proyecto.
+Qué hace el pipeline de migración.Limitaciones o supuestos importantes.
+
+
+    Este archivo README.md contiene toda la información solicitada. Lo estás viendo justo ahora.
+
+## Soporte
 
 Si encuentras problemas:
 
-1. Revisa los logs: `docker-compose logs -f`
-2. Verifica el estado: `docker-compose ps`
-3. Prueba reiniciar: `docker-compose down -v && docker-compose up -d --build`
+1. Prueba reiniciar: `docker-compose down -v && docker-compose up -d --build`
+2. Contacta al autor: [ander.bh.16@gmail.com]() - LinkedIn: [AndersonBH16](https://www.linkedin.com/in/andersonblas/)

@@ -1,5 +1,4 @@
 import { Logger } from '../utils/logger';
-import { AvailabilityData } from '../scrapers/doctoralia.scraper';
 
 export interface AppointmentData {
   doctorId: bigint;
@@ -25,7 +24,6 @@ export class AppointmentGenerator {
     const appointments: AppointmentData[] = [];
 
     for (const doctor of doctors) {
-      // Validar que el doctor tenga disponibilidad Y tratamientos
       if (!doctor.availability || doctor.availability.length === 0) {
         Logger.warn(`Doctor ${doctor.id} has no availability slots`);
         continue;
@@ -61,22 +59,13 @@ export class AppointmentGenerator {
     doctor: { id: bigint; availability: any[]; treatments: Array<{ id: bigint }> },
     patients: Array<{ id: bigint }>
   ): AppointmentData | null {
-    // Seleccionar disponibilidad aleatoria
     const availability = doctor.availability[Math.floor(Math.random() * doctor.availability.length)];
-
-    // Seleccionar tratamiento aleatorio
     const treatment = doctor.treatments[Math.floor(Math.random() * doctor.treatments.length)];
-
-    // Seleccionar paciente aleatorio
     const patient = patients[Math.floor(Math.random() * patients.length)];
-
-    // Convertir a Date si no lo son
     const startDate = availability.start_at instanceof Date ? availability.start_at : new Date(availability.start_at);
     const endDate = availability.end_at instanceof Date ? availability.end_at : new Date(availability.end_at);
-
-    // Generar hora de inicio dentro del bloque de disponibilidad
     const availabilityDuration = endDate.getTime() - startDate.getTime();
-    const slotDuration = 30 * 60 * 1000; // 30 minutos por defecto
+    const slotDuration = 30 * 60 * 1000;
 
     const maxSlots = Math.floor(availabilityDuration / slotDuration);
     if (maxSlots <= 0) return null;
@@ -85,12 +74,10 @@ export class AppointmentGenerator {
     const startAt = new Date(startDate.getTime() + randomSlot * slotDuration);
     const endAt = new Date(startAt.getTime() + slotDuration);
 
-    // Validar que endAt no exceda availability.endAt
     if (endAt > endDate) {
       return null;
     }
 
-    // Estado aleatorio con probabilidades
     const rand = Math.random();
     let status: 'scheduled' | 'completed' | 'cancelled';
     if (rand < 0.7) status = 'scheduled';
