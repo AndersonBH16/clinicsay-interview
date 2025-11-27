@@ -232,14 +232,14 @@ export class DoctoraliaScraper {
 
     private cleanAddress(addr: string): string {
         return addr
-            .replace(/\s+/g, ' ')           // Múltiples espacios → 1 espacio
-            .replace(/\n/g, '')             // Remover saltos de línea
-            .replace(/\t/g, '')             // Remover tabulaciones
-            .replace(/,\s*,/g, ',')         // Remover comas duplicadas
-            .replace(/^\s*,\s*/, '')        // Remover coma al inicio
-            .replace(/\s*,\s*$/, '')        // Remover coma al final
-            .replace(/\s+,/g, ',')          // Espacios antes de coma
-            .replace(/,\s+/g, ', ')         // Normalizar espacios después de coma
+            .replace(/\s+/g, ' ')
+            .replace(/\n/g, '')
+            .replace(/\t/g, '')
+            .replace(/,\s*,/g, ',')
+            .replace(/^\s*,\s*/, '')
+            .replace(/\s*,\s*$/, '')
+            .replace(/\s+,/g, ',')
+            .replace(/,\s+/g, ', ')
             .trim();
     }
 
@@ -266,7 +266,7 @@ export class DoctoraliaScraper {
                 return addr;
             }
 
-            const addressElement = $('[data-test-id="street-address"]');
+            const addressElement = $('[data-__test__-id="street-address"]');
             if (addressElement.length > 0) {
                 const text = addressElement.parent().find('span.text-truncate').first().text().trim();
                 if (text && text.length > 10) {
@@ -414,7 +414,7 @@ export class DoctoraliaScraper {
                 });
             }
         } catch {
-            // Ignore errors
+            // Por ahora ignorar erroress
         }
 
         return treatments;

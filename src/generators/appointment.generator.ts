@@ -36,7 +36,7 @@ export class AppointmentGenerator {
 
       const numAppointments = Math.min(
         this.numAppointmentsPerDoctor,
-        doctor.availability.length * 4 // Máximo 4 citas por bloque de disponibilidad
+        doctor.availability.length * 4
       );
 
       for (let i = 0; i < numAppointments; i++) {
