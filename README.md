@@ -24,6 +24,7 @@ El repositorio oficial del proyecto es: https://github.com/AndersonBH16/clinicsa
 # Si usas Git
 git clone https://github.com/AndersonBH16/clinicsay-interview.git
 cd clinicsay-app
+npm install
 
 # O simplemente crea la carpeta y copia los archivos
 ```
@@ -167,6 +168,71 @@ Conecta con cualquier cliente PostgreSQL (DBeaver, pgAdmin, TablePlus, etc.):
 - **Username:** postgres
 - **Password:** postgres
 - **Schema:** clinic
+
+## 🧪 Ejecutar Tests
+
+El proyecto incluye tests unitarios para validar la lógica de scraping, generación de pacientes y citas.
+Ejecutar todos los tests:
+
+```bash
+
+npm test
+```
+
+**Salida esperada:**
+```
+PASS  src/__tests__/generators/patient.generator.test.ts
+PASS  src/__tests__/generators/appointment.generator.test.ts
+PASS  src/__tests__/scrapers/doctoralia.screaper.test.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       14 passed, 14 total
+Snapshots:   0 total
+Time:        3.33 s
+Ran all test suites.
+
+Ejecutar tests con cobertura
+bashnpm run test:coverage
+Esto generará un reporte de cobertura en la carpeta coverage/.
+Ejecutar tests en modo watch
+bashnpm run test:watch
+```
+
+Útil durante el desarrollo, los tests se re-ejecutan automáticamente al guardar cambios.
+
+### Tests incluidos
+
+Los tests cubren las siguientes áreas:
+
+✅ **Scraper de Doctoralia:**
+- Limpieza de direcciones con espacios, saltos de línea y caracteres especiales
+- Validación de doctores (rechazo de clínicas, centros médicos, nombres en mayúsculas)
+- Generación de números de teléfono válidos
+
+✅ **Generador de Pacientes:**
+- Generación del número correcto de pacientes según configuración
+- Validación de formato de datos (DNI, teléfono, email)
+- Unicidad de números de documento y emails
+
+✅ **Generador de Citas:**
+- Generación de citas para todos los doctores
+- Validación de que las citas estén dentro de los slots de disponibilidad
+- Asignación correcta de doctor, paciente y tratamiento
+
+### Estructura de tests
+```
+src/__tests__/
+├── generators/
+│   ├── appointment.generator.test.ts
+│   └── patient.generator.test.ts
+├── scrapers/
+│   └── doctoralia.screaper.test.ts
+└── utils/
+└── logger.tests.ts
+```
+
+
+
 
 ## 🔄 Comandos para interactuar con Docker
 
