@@ -11,7 +11,9 @@ Doctoralia mediante técnica de scraping y la carga en una base de datos Postgre
 
 ## Información Técnica del Proyecto
 
-Este documento contiene explicaciones técnicas de como se abordó el proyecto y como se llegó a la solución final.
+Este documento contiene explicaciones técnicas de como se abordó el proyecto y como se llegó a la solución final:
+
+https://docs.google.com/document/d/1-xZcqzBtvEu7Hez4Fx_-dtlCqClZcdcjONpdWwjSwts/edit?usp=sharing
 
 ## 🚀 Instrucciones de Instalación y Ejecución
 
@@ -320,7 +322,7 @@ doctoralia-migration/
   - No se manejan proxies o rotación de IPs, lo que puede llevar a bloqueos si se hacen muchas solicitudes.
   - La generación de datos es básica y puede que se presente alguna inconsistencia en ciertos datos, pero pueden ser manejados mejorando y optimizando los algoritmos de scraping.
   - Para efecto de prueba, se utilizaron dos ciudades: Lima y Trujillo, y dos especialidades: Cardiología y Dermatología. Esto puede ser modificado en el archivo .env
-  - 
+  - Los datos de doctores, al ser muchos, sólo se utilizaron 3 páginas para efectos de prueba, se podría ampliar a más, pero consideré que lo necesario era evaluar la estructura del ETL como tal
 
 ## Entregables para la prueba técnica
 
